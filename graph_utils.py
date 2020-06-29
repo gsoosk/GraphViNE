@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 #
 
 # This method just use CPU as node feature. Instead of CPU, Hard, and Memory in the main implementation.
-def create_network_graph(nodes_num=100, max_feature_val=100, min_feature_val=1, connection_prob=0.4, life_time=None, max_link_val=100, min_link_val=1):
+def create_network_graph(nodes_num=100, max_feature_val=400, min_feature_val=100, connection_prob=0.4, life_time=None, max_link_val=400, min_link_val=100):
     G = nx.Graph()
     if life_time != None:
         G.graph['LifeTime'] = np.random.randint(life_time[0], life_time[1])
