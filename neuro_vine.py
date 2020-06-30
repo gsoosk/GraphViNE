@@ -47,12 +47,12 @@ class NeuroVine:
         u0 = 1.0
         Delta = np.inf
         delta = 1.0
-        iMax = 1000
+        iMax = 2000
         i = 0
         U = np.random.uniform(0, 1, I.shape)
         V = np.copy(U)
         #print('U shape', U.shape, 'V shape', V.shape)
-        tau = 0.1
+        tau = 0.02
         while (Delta > delta) and (i < iMax):
             i = i + 1
             #print(i)
@@ -70,6 +70,8 @@ class NeuroVine:
             #print('dU shape', dU.shape)
             U = U + tau*dU
             #print('u', U)
+            # Delta = np.abs()
+            Delta = np.sqrt(sum(np.square(dU)))
             V = 0.5 * (1 + np.tanh(np.divide(U, u0)))
             #print('v', V)
             #print('U shape', U.shape, 'V shape', V.shape)

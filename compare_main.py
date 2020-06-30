@@ -49,20 +49,20 @@ def compute():
     np.random.seed(64) # to get a unique result every time
     physical_graph = create_network_graph(nodes_num=100)
     requests = [create_network_graph(np.random.randint(3, 11), min_feature_val=4, max_feature_val=10,
-                                     min_link_val=4, max_link_val=10, connection_prob=0.7, life_time=(100, 900)) for i in range(6000)]
+                                     min_link_val=4, max_link_val=10, connection_prob=0.7, life_time=(100, 900)) for i in range(8300)]
 
-    load = 2000
-    max_time = 500
+    load = 1000
+    max_time = 2000
     # graphViNE_run(physical_graph, requests, load=load, max_time=max_time)
     neuroViNE_run(physical_graph, requests, load=load, max_time=max_time)
     # grc_run(physical_graph, requests, load=load, max_time=max_time),
 
 def compare():
-    grc_probs = np.fromfile('./results/grc_probs.dat')
-    gv_probs = np.fromfile('./results/gv_probs.dat')
+    grc_probs = np.fromfile('./results/Load1000/grc_probs.dat')
+    gv_probs = np.fromfile('./results/nv_probs.dat')
 
     from result_utils import draw_blocking_prob
-    draw_blocking_prob(grc_probs, gv_probs, 'GRC', 'GV', 'Time Units', 'Blocking prob')
+    draw_blocking_prob(grc_probs, gv_probs, 'GRC', 'GraphViNE', 'Time Units', 'Blocking prob')
 
 
 import sys
