@@ -45,7 +45,7 @@ def grc_run(physical_graph, requests, save=True, load=2000, max_time=500):
     return grc_probs, grc_blockeds, grc_num, grc_cost, grc_revenue, grc_cpu_utils, grc_link_utils 
 
 
-def main():
+def compute():
     np.random.seed(64) # to get a unique result every time
     physical_graph = create_network_graph(nodes_num=100)
     requests = [create_network_graph(np.random.randint(3, 11), min_feature_val=4, max_feature_val=10,
@@ -54,9 +54,32 @@ def main():
     load = 2000
     max_time = 500
     # graphViNE_run(physical_graph, requests, load=load, max_time=max_time)
-    # neuroViNE_run(physical_graph, requests, load=load, max_time=max_time)
-    grc_run(physical_graph, requests, load=load, max_time=max_time)
+    neuroViNE_run(physical_graph, requests, load=load, max_time=max_time)
+    # grc_run(physical_graph, requests, load=load, max_time=max_time),
+
+def compare():
+    grc_probs = np.fromfile('./results/grc_probs.dat')
+    gv_probs = np.fromfile('./results/gv_probs.dat')
+
+    from result_utils import draw_blocking_prob
+    draw_blocking_prob(grc_probs, gv_probs, 'GRC', 'GV', 'Time Units', 'Blocking prob')
 
 
+import sys
+commands = ['--help', '-h', '--get_results', '--compare_results']
+help = '''
+    Oprtions:
+        --help / -h : shows this help!
+        --get_resutls : computes results of models and store in ./results repo.
+        --compare_resutls : compares results using matplotlib
+        '''
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) !=2 or sys.argv[1] not in commands:
+        print('Undefiend Options')
+        print(help)
+    elif sys.argv[1] == commands[0] or sys.argv[1] == commands[1]:
+        print(help)
+    elif sys.argv[1] == commands[2]:
+        compute()
+    elif sys.argv[1] == commands[3]:
+        compare()
