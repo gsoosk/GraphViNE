@@ -69,6 +69,22 @@ def best_fit_run(physical_graph, requests, save=True, load=2000, max_time=500):
     return bf_probs, bf_blockeds, bf_num, bf_cost, bf_revenue, bf_cpu_utils, bf_link_utils
 
 
+def first_fit_run(physical_graph, requests, save=True, load=2000, max_time=500):
+    physical_first_fit = physical_graph.copy()
+    request_graphs_first_fit = [r.copy() for r in requests]
+    results = get_run_result(
+        physical_first_fit, request_graphs_first_fit, method="firstFit", traffic_load=load, max_time=max_time, cost_revenue=True, utils=True)
+
+    if save:
+        names = ['ff_probs', 'ff_blockeds', 'ff_num', 'ff_cost',
+                 'ff_revenue', 'ff_cpu_utils', 'ff_link_utils']
+        for i in range(len(results)):
+            save_data(results[i], names[i])
+    [ff_probs, ff_blockeds, ff_num, ff_cost, ff_revenue,
+        ff_cpu_utils, ff_link_utils] = results
+    return ff_probs, ff_blockeds, ff_num, ff_cost, ff_revenue, ff_cpu_utils, ff_link_utils
+
+
 def compute():
     np.random.seed(64)  # to get a unique result every time
     physical_graph = create_network_graph(nodes_num=100)
@@ -80,16 +96,23 @@ def compute():
     # graphViNE_run(physical_graph, requests, load=load, max_time=max_time)
     # neuroViNE_run(physical_graph, requests, load=load, max_time=max_time)
     # grc_run(physical_graph, requests, load=load, max_time=max_time)
-    best_fit_run(physical_graph, requests, load=load, max_time=max_time)
+    # best_fit_run(physical_graph, requests, load=load, max_time=max_time)
+    first_fit_run(physical_graph, requests, load=load, max_time=max_time)
 
 
 def compare():
-    grc_probs = np.fromfile('./results/Load1000/gv_probs.dat')
-    gv_probs = np.fromfile('./results/nv_probs.dat')
+    grc_probs = np.fromfile('./results/Load1000/grc_probs.dat')
+    nv_probs = np.fromfile('./results/Load1000/nv_probs.dat')
+    gv_probs = np.fromfile('./results/Load1000/gv_probs.dat')
+    bf_probs = np.fromfile('./results/Load1000/bf_probs.dat')
+    ff_probs = np.fromfile('./results/ff_probs.dat')
 
     from result_utils import draw_blocking_prob
-    draw_blocking_prob(grc_probs, gv_probs, 'GRC',
-                       'GraphViNE', 'Time Units', 'Blocking prob')
+    draw_blocking_prob([grc_probs, gv_probs, bf_probs, ff_probs, nv_probs],
+                       ['GRC', 'GraphViNE', 'Best Fit', 'First Fit', 'NeuroViNE'],
+                       ['r', 'b', 'purple', 'green', 'y'],
+                       'Time Units', 'Blocking prob', 'Models Block Probability')
+    
 
 
 commands = ['--help', '-h', '--get_results', '--compare_results']

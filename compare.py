@@ -8,6 +8,7 @@ from compare_utils import compute_cost, compute_utils, compute_revenue
 import numpy as np
 from neuro_vine import neuro_vine_embed
 from best_fit import best_fit_embed
+from first_fit import first_fit_embed
 
 def get_run_result(physical, request_graphs, method="graphViNE", max_time=3000,
                    traffic_load=150, avg_life_time=500, verbose=True, cost_revenue=False, utils=False):
@@ -66,7 +67,7 @@ def get_run_result(physical, request_graphs, method="graphViNE", max_time=3000,
                     physical, request_graphs[request_index], verbose=False)
             ################################### First Fit Method ##########################################################
             elif method == 'firstFit':
-                request_embedded, physical, request_graphs[request_index] = neuro_vine_embed(
+                request_embedded, physical, request_graphs[request_index] = first_fit_embed(
                     physical, request_graphs[request_index], verbose=False)
             num += 1
 

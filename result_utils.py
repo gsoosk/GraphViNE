@@ -3,12 +3,12 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 
-def draw_blocking_prob(x1, x2, x1_label, x2_label, x_label, y_label, title='', save=True, name=None):
+def draw_blocking_prob(x, labels, colors, x_label, y_label, title='', save=True, name=None):
   sns.set()
   fig, ax = plt.subplots()
   fig.set_size_inches(10, 7)
-  ax.plot(x1, color='r', label=x1_label)
-  ax.plot(x2, color='b', label=x2_label)
+  for i in range(len(x)):
+    ax.plot(x[i], color=colors[i], label=labels[i])
   ax.set_ylabel(y_label)
   ax.set_xlabel(x_label)
   legend = ax.legend(loc='upper left', shadow=True)
