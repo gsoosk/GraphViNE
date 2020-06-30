@@ -8,6 +8,14 @@ class Net:
     def __init__(self, cpu, bw):
         self.cpu = cpu
         self.bw = bw
+    
+    def get_copy(self): 
+        return Net(self.cpu, self.bw)
+    
+    def shrink_net(self, a):
+        cpu_temp_a = self.cpu[a]
+        self.cpu[:] = 0
+        self.cpu[a] = cpu_temp_a
 
 
 class Inst:
@@ -31,6 +39,9 @@ class GRC:
         net.bw: adj matrix of net with value of bandwidths
         """
         vnr_inst = Inst(physical, request)
+        return self.solve(vnr_inst)
+
+    def solve(self, vnr_inst):
         grc_vector_p = self.grc_vector(vnr_inst.p_net, d=0.85)
         grc_vector_v = self.grc_vector(vnr_inst.v_net, d=0.85)
         (blocked, Fn, cp_residual) = self.greedy_node_mapping(

@@ -4,46 +4,9 @@ from graph_utils import from_networkx, create_network_graph
 import torch
 from sklearn.cluster import KMeans
 from graphViNE_best_fit import graphViNE_embed, free_embedded_request
-
-
-def compute_revenue(req):
-    revenue = 0
-    for i in req.nodes:
-        revenue += req.nodes[i]['CPU']
-    for e in req.edges:
-        revenue += req.edges[e[0], e[1]]['Bandwidth']
-    return revenue
-
-
-def compute_cost(req):
-    cost = 0
-    for i in req.nodes:
-        cost += req.nodes[i]['CPU']
-
-    for e in req.edges:
-        num_of_occupied_edges = 0
-        if 'Embedded' in req.edges[e[0], e[1]]:
-            num_of_occupied_edges = len(req.edges[e[0], e[1]]['Embedded'])
-        cost += req.edges[e[0], e[1]]['Bandwidth'] * num_of_occupied_edges
-    return cost
-
-
-def compute_utils(physical):
-    cpu_util = 0
-    link_util = 0
-
-    for i in physical.nodes:
-        cpu_util += 1 - (physical.nodes[i]['CPU']/physical.nodes[i]['MaxCPU'])
-    cpu_util /= physical.number_of_nodes()
-
-    for e in physical.edges:
-        link_util += 1 - \
-            (physical.edges[e[0], e[1]]['Bandwidth'] /
-             physical.edges[e[0], e[1]]['MaxBandwidth'])
-    link_util /= physical.number_of_edges()
-
-    return cpu_util, link_util
-
+from compare_utils import compute_cost, compute_utils, compute_revenue
+import numpy as np
+from neuro_vine import neuro_vine_embed
 
 def get_run_result(physical, request_graphs, method="graphViNE", max_time=3000,
                    traffic_load=150, avg_life_time=500, verbose=True, cost_revenue=False, utils=False):
@@ -80,7 +43,7 @@ def get_run_result(physical, request_graphs, method="graphViNE", max_time=3000,
                     data = data.to(device)
                     # train model
                     model = cluster_using_argva(data, verbose=False, max_epoch=100) if model is None else cluster_using_argva(
-                        data, verbose=True, max_epoch=50, pre_trained_model=model)
+                        data, verbose=False, max_epoch=5, pre_trained_model=model)
                     with torch.no_grad():
                         z = model.encode(
                             data.x, data.edge_index, data.edge_attr)
@@ -91,6 +54,10 @@ def get_run_result(physical, request_graphs, method="graphViNE", max_time=3000,
             ################################### GRC Method ##########################################################
             elif method == 'grc':
                 request_embedded, physical, request_graphs[request_index] = grc_embed(
+                    physical, request_graphs[request_index], verbose=False)
+            ################################### NeuroViNE Method ##########################################################
+            elif method == 'neuroViNE':
+                request_embedded, physical, request_graphs[request_index] = neuro_vine_embed(
                     physical, request_graphs[request_index], verbose=False)
             num += 1
 

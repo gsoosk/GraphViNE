@@ -3,8 +3,8 @@ import networkx as nx
 import numpy as np
 
 class NeuroVine:
-    def __init__(self, inst):
-        self.inst = inst
+    def __init__(self, physical, request):
+        self.inst = Inst(physical, request)
         self.kappa = 3
         #print 'neurovine kappa: %d' %self.kappa
 
@@ -122,3 +122,27 @@ class NeuroVine:
         n = len(self.inst.v_net.cpu)
         #print('zeta', 5 * n)
         return n*self.kappa
+
+
+def neuro_vine_embed(physical_graph, request_graph, verbose=False):
+    neuro_vine = NeuroVine(physical_graph, request_graph)
+    (rejected, info) = neuro_vine.hf_grc()
+    Fn = info['Fn']
+    Fl = info['Fl']
+
+    if rejected:
+        return not rejected, physical_graph, request_graph
+
+    for i in range(len(Fn)):
+        request_graph.nodes[i]['Embedded'] = int(Fn[i])
+        physical_graph.nodes[int(
+            Fn[i])]['CPU'] -= request_graph.nodes[i]['CPU']
+
+    for key in Fl.keys():
+        (i, j) = key
+        request_graph.edges[i, j]['Embedded'] = Fl[key]
+        for edge in Fl[key]:
+            physical_graph.edges[edge[0], edge[1]
+                                 ]['Bandwidth'] -= request_graph.edges[i, j]['Bandwidth']
+
+    return not rejected, physical_graph, request_graph

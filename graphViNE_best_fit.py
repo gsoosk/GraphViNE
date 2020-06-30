@@ -235,7 +235,7 @@ def embed_request(cluster_center, physical, request_graph, beta=30, verbose=True
     return request_embedded, physical, request_graph
 
 
-from compare import compute_cost, compute_revenue
+from compare_utils import compute_cost, compute_revenue
 
 def graphViNE_embed(physical_graph, cluster_index, request_graph, alpha = 0.5, N_CLUSTERS=4, verbose=False):
   embeddeds = []
