@@ -1,6 +1,7 @@
 import networkx as nx
 import numpy as np
 
+
 def compute_revenue(req):
     revenue = 0
     for i in req.nodes:
