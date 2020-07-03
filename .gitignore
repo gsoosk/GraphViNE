@@ -5,7 +5,8 @@
 ### pydev ###
 .pydevproject
 /.vscode/*
-/results/*
+/src/results/*
+/src/compare/*
 /graphs/*
 ### Python ###
 # Byte-compiled / optimized / DLL files

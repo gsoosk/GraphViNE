@@ -20,7 +20,9 @@ import matplotlib.pyplot as plt
 #
 
 # This method just use CPU as node feature. Instead of CPU, Hard, and Memory in the main implementation.
-def create_network_graph(nodes_num=100, max_feature_val=400, min_feature_val=100, connection_prob=0.4, life_time=None, max_link_val=400, min_link_val=100):
+def create_network_graph(nodes_num=100, max_feature_val=400, min_feature_val=100, connection_prob=0.4,
+                         life_time=None, max_link_val=400, min_link_val=100, extra_features=False,
+                         min_GPU=300, min_mem=100, max_GPU=1200, max_mem=400):
     G = nx.Graph()
     if life_time != None:
         G.graph['LifeTime'] = np.random.randint(life_time[0], life_time[1])
@@ -28,6 +30,11 @@ def create_network_graph(nodes_num=100, max_feature_val=400, min_feature_val=100
         min_feature_val, max_feature_val+1, size=(nodes_num, 1))
     for i, node_feature in enumerate(random_features):
         G.add_node(i, CPU=node_feature[0], MaxCPU=node_feature[0])
+        if extra_features:
+            G.nodes[i]['GPU'] = np.random.randint(min_GPU, max_GPU+1)
+            G.nodes[i]['MaxGPU'] = G.nodes[i]['GPU']
+            G.nodes[i]['Memory'] = np.random.randint(min_mem, max_mem+1)
+            G.nodes[i]['MaxMemory'] = G.nodes[i]['Memory']
 
     for i in range(nodes_num):
         for j in range(i+1, nodes_num):
