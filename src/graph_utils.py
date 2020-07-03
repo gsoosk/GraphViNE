@@ -91,10 +91,11 @@ def from_networkx(G, normalize=False):
     for i, (_, feat_dict) in enumerate(G.nodes(data=True)):
         x = []
         for key, value in feat_dict.items():
-            if key == 'MaxCPU':
+            if key == 'MaxCPU' or key == 'MaxGPU' or key == 'MaxMemory':
                 continue
             x.append(float(value))
         data['x'] = [x] if i == 0 else data['x'] + [x]
+
     if normalize:
         data['x'] = normailize_data(data['x'])
 

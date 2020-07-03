@@ -10,6 +10,7 @@ from neuro_vine import neuro_vine_embed
 from best_fit import best_fit_embed
 from first_fit import first_fit_embed
 
+
 def get_run_result(physical, request_graphs, method="graphViNE", max_time=3000,
                    traffic_load=150, avg_life_time=500, verbose=True, cost_revenue=False, utils=False):
     r"""
@@ -25,6 +26,8 @@ def get_run_result(physical, request_graphs, method="graphViNE", max_time=3000,
     request_index = 0
     link_utils = []
     cpu_utils = []
+    gpu_utils = []
+    memory_utils = []
     pred = []
     model = None
     for t in range(1, max_time):  # Loop over all times
@@ -81,6 +84,13 @@ def get_run_result(physical, request_graphs, method="graphViNE", max_time=3000,
                         request_graphs[request_index]))
                     costs.append(compute_cost(request_graphs[request_index]))
                 if utils:
+                    if 'GPU' in physical.nodes[0]:
+                        cpu_util, link_util, gpu_util, mem_util = compute_utils(
+                            physical)
+                        cpu_utils.append(cpu_util)
+                        link_utils.append(link_util)
+                        gpu_utils.append(gpu_util)
+                        memory_utils.append(mem_util)
                     cpu_util, link_util = compute_utils(physical)
                     cpu_utils.append(cpu_util)
                     link_utils.append(link_util)
@@ -116,4 +126,7 @@ def get_run_result(physical, request_graphs, method="graphViNE", max_time=3000,
     if utils:
         return_values.append(cpu_utils)
         return_values.append(link_utils)
+        if 'GPU' in physical.nodes[0]:
+            return_values.append(gpu_utils)
+            return_values.append(memory_utils)
     return return_values

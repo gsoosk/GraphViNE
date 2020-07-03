@@ -6,6 +6,18 @@ from result_utils import save_data
 import _thread as thread
 
 
+def save_results(model_name, results):
+    if len(results) == 7:
+        names = [f'{model_name}_probs', f'{model_name}_blockeds', f'{model_name}_num', f'{model_name}_cost',
+                 f'{model_name}_revenue', f'{model_name}_cpu_utils', f'{model_name}_link_utils']
+    else:
+        names = [f'{model_name}_probs', f'{model_name}_blockeds', f'{model_name}_num', f'{model_name}_cost',
+                 f'{model_name}_revenue', f'{model_name}_cpu_utils', f'{model_name}_link_utils',
+                 f'{model_name}_gpu_utils', f'{model_name}_memory_utils']
+    for i in range(len(results)):
+        save_data(results[i], names[i])
+
+
 def graphViNE_run(physical_graph, requests, save=True, load=2000, max_time=500, verbose=True):
     physical_graph_vine = physical_graph.copy()
     request_graphs_graph_vine = [r.copy() for r in requests]
@@ -13,13 +25,9 @@ def graphViNE_run(physical_graph, requests, save=True, load=2000, max_time=500, 
         physical_graph_vine, request_graphs_graph_vine, method="graphViNE", traffic_load=load, max_time=max_time, cost_revenue=True, utils=True, verbose=verbose)
 
     if save:
-        names = ['gv_probs', 'gv_blockeds', 'gv_num', 'gv_cost',
-                 'gv_revenue', 'gv_cpu_utils', 'gv_link_utils']
-        for i in range(len(results)):
-            save_data(results[i], names[i])
-    [gv_probs, gv_blockeds, gv_num, gv_cost, gv_revenue,
-        gv_cpu_utils, gv_link_utils] = results
-    return gv_probs, gv_blockeds, gv_num, gv_cost, gv_revenue, gv_cpu_utils, gv_link_utils
+        save_results('gv', results)
+
+    return results
 
 
 def neuroViNE_run(physical_graph, requests, save=True, load=2000, max_time=500, verbose=True):
@@ -29,13 +37,9 @@ def neuroViNE_run(physical_graph, requests, save=True, load=2000, max_time=500, 
         physical_neuro, request_graphs_neuro, method="neuroViNE", traffic_load=load, max_time=max_time, cost_revenue=True, utils=True, verbose=verbose)
 
     if save:
-        names = ['nv_probs', 'nv_blockeds', 'nv_num', 'nv_cost',
-                 'nv_revenue', 'nv_cpu_utils', 'nv_link_utils']
-        for i in range(len(results)):
-            save_data(results[i], names[i])
-    [nv_probs, nv_blockeds, nv_num, nv_cost, nv_revenue,
-        nv_cpu_utils, nv_link_utils] = results
-    return nv_probs, nv_blockeds, nv_num, nv_cost, nv_revenue, nv_cpu_utils, nv_link_utils
+        save_results('nv', results)
+
+    return results
 
 
 def grc_run(physical_graph, requests, save=True, load=2000, max_time=500, verbose=True):
@@ -45,13 +49,9 @@ def grc_run(physical_graph, requests, save=True, load=2000, max_time=500, verbos
         physical_grc, request_graphs_grc, method="grc", traffic_load=load, max_time=max_time, cost_revenue=True, utils=True,  verbose=verbose)
 
     if save:
-        names = ['grc_probs', 'grc_blockeds', 'grc_num', 'grc_cost',
-                 'grc_revenue', 'grc_cpu_utils', 'grc_link_utils']
-        for i in range(len(results)):
-            save_data(results[i], names[i])
-    [grc_probs, grc_blockeds, grc_num, grc_cost,
-        grc_revenue, grc_cpu_utils, grc_link_utils] = results
-    return grc_probs, grc_blockeds, grc_num, grc_cost, grc_revenue, grc_cpu_utils, grc_link_utils
+        save_results('grc', results)
+
+    return results
 
 
 def best_fit_run(physical_graph, requests, save=True, load=2000, max_time=500, verbose=True):
@@ -61,13 +61,9 @@ def best_fit_run(physical_graph, requests, save=True, load=2000, max_time=500, v
         physical_best_fit, request_graphs_best_fit, method="bestFit", traffic_load=load, max_time=max_time, cost_revenue=True, utils=True, verbose=verbose)
 
     if save:
-        names = ['bf_probs', 'bf_blockeds', 'bf_num', 'bf_cost',
-                 'bf_revenue', 'bf_cpu_utils', 'bf_link_utils']
-        for i in range(len(results)):
-            save_data(results[i], names[i])
-    [bf_probs, bf_blockeds, bf_num, bf_cost, bf_revenue,
-        bf_cpu_utils, bf_link_utils] = results
-    return bf_probs, bf_blockeds, bf_num, bf_cost, bf_revenue, bf_cpu_utils, bf_link_utils
+        save_results('bf', results)
+
+    return results
 
 
 def first_fit_run(physical_graph, requests, save=True, load=2000, max_time=500, verbose=True):
@@ -77,13 +73,9 @@ def first_fit_run(physical_graph, requests, save=True, load=2000, max_time=500, 
         physical_first_fit, request_graphs_first_fit, method="firstFit", traffic_load=load, max_time=max_time, cost_revenue=True, utils=True, verbose=verbose)
 
     if save:
-        names = ['ff_probs', 'ff_blockeds', 'ff_num', 'ff_cost',
-                 'ff_revenue', 'ff_cpu_utils', 'ff_link_utils']
-        for i in range(len(results)):
-            save_data(results[i], names[i])
-    [ff_probs, ff_blockeds, ff_num, ff_cost, ff_revenue,
-        ff_cpu_utils, ff_link_utils] = results
-    return ff_probs, ff_blockeds, ff_num, ff_cost, ff_revenue, ff_cpu_utils, ff_link_utils
+        save_results('ff', results)
+
+    return results
 
 
 def compute():
@@ -94,11 +86,16 @@ def compute():
 
     load = 1000
     max_time = 2000
-    graphViNE_run(physical_graph, requests, load=load, max_time=max_time, verbose=False)
-    neuroViNE_run(physical_graph, requests, load=load, max_time=max_time, verbose=False)
-    grc_run(physical_graph, requests, load=load, max_time=max_time, verbose=False)
-    best_fit_run(physical_graph, requests, load=load, max_time=max_time, verbose=False)
-    first_fit_run(physical_graph, requests, load=load, max_time=max_time, verbose=False)
+    graphViNE_run(physical_graph, requests, load=load,
+                  max_time=max_time, verbose=False)
+    neuroViNE_run(physical_graph, requests, load=load,
+                  max_time=max_time, verbose=False)
+    grc_run(physical_graph, requests, load=load,
+            max_time=max_time, verbose=False)
+    best_fit_run(physical_graph, requests, load=load,
+                 max_time=max_time, verbose=False)
+    first_fit_run(physical_graph, requests, load=load,
+                  max_time=max_time, verbose=False)
 
 
 def compare():
@@ -115,7 +112,7 @@ def compare():
                        ['r', 'b', 'purple', 'green', 'y'],
                        'Time Units', 'Blocking prob', 'Models Block Probability with 2 Request Per Time Unit - (VNRs Link max = 50 instead of 10)',
                        name='bp', scale=4)
-    
+
     draw_blocking_prob([1 - grc_probs, 1 - gv_probs, 1 - bf_probs, 1 - ff_probs, 1 - nv_probs],
                        ['GRC', 'GraphViNE', 'Best Fit', 'First Fit', 'NeuroViNE'],
                        ['r', 'b', 'purple', 'green', 'y'],
@@ -130,9 +127,9 @@ def compare():
 
     from result_utils import draw_bars
     draw_bars(['GRC', 'GraphViNE', 'Best Fit', 'First Fit', 'NeuroViNE'],
-               [grc_revenue, gv_revenue, bf_revenue, ff_revenue, nv_revenue], 
-               '2000 Time Units - 2 req per tt - VNRs max link 40',
-               name='revenue')
+              [grc_revenue, gv_revenue, bf_revenue, ff_revenue, nv_revenue],
+              '2000 Time Units - 2 req per tt - VNRs max link 40',
+              name='revenue')
 
     grc_cost = sum(np.fromfile(f'{folder}/grc_cost.dat', dtype=int))
     nv_cost = sum(np.fromfile(f'{folder}/nv_cost.dat', dtype=int))
@@ -140,49 +137,73 @@ def compare():
     bf_cost = sum(np.fromfile(f'{folder}/bf_cost.dat', dtype=int))
     ff_cost = sum(np.fromfile(f'{folder}/ff_cost.dat', dtype=int))
 
+    from result_utils import draw_bars
+    draw_bars(['GRC', 'GraphViNE', 'Best Fit', 'First Fit', 'NeuroViNE'],
+              [grc_cost, gv_cost, bf_cost, ff_cost, nv_cost],
+              '2000 Time Units - 2 req per tt - VNRs max link 40',
+              name='cost')
+
+    grc_cpu_util = -sum(np.fromfile(f'{folder}/grc_cpu_utils.dat')) / ((np.fromfile(
+        f'{folder}/grc_blockeds.dat', dtype=int)[0]) - np.fromfile(f'{folder}/grc_num.dat', dtype=int)[0])
+    nv_cpu_util = -sum(np.fromfile(f'{folder}/nv_cpu_utils.dat')) / ((np.fromfile(
+        f'{folder}/nv_blockeds.dat', dtype=int)[0]) - np.fromfile(f'{folder}/nv_num.dat', dtype=int)[0])
+    gv_cpu_util = -sum(np.fromfile(f'{folder}/gv_cpu_utils.dat')) / ((np.fromfile(
+        f'{folder}/gv_blockeds.dat', dtype=int)[0]) - np.fromfile(f'{folder}/gv_num.dat', dtype=int)[0])
+    bf_cpu_util = -sum(np.fromfile(f'{folder}/bf_cpu_utils.dat')) / ((np.fromfile(
+        f'{folder}/bf_blockeds.dat', dtype=int)[0]) - np.fromfile(f'{folder}/bf_num.dat', dtype=int)[0])
+    ff_cpu_util = -sum(np.fromfile(f'{folder}/ff_cpu_utils.dat')) / ((np.fromfile(
+        f'{folder}/ff_blockeds.dat', dtype=int)[0]) - np.fromfile(f'{folder}/ff_num.dat', dtype=int)[0])
 
     from result_utils import draw_bars
     draw_bars(['GRC', 'GraphViNE', 'Best Fit', 'First Fit', 'NeuroViNE'],
-               [grc_cost, gv_cost, bf_cost, ff_cost, nv_cost], 
-               '2000 Time Units - 2 req per tt - VNRs max link 40',
-               name='cost')
+              [grc_cpu_util, gv_cpu_util, bf_cpu_util, ff_cpu_util, nv_cpu_util],
+              '2000 Time Units - 2 req per tt - VNRs max link 40',
+              name='cpu_util')
 
-
-    grc_cpu_util = -sum(np.fromfile(f'{folder}/grc_cpu_utils.dat')) / ((np.fromfile(f'{folder}/grc_blockeds.dat', dtype=int)[0]) -  np.fromfile(f'{folder}/grc_num.dat', dtype=int)[0]) 
-    nv_cpu_util = -sum(np.fromfile(f'{folder}/nv_cpu_utils.dat')) / ((np.fromfile(f'{folder}/nv_blockeds.dat', dtype=int)[0]) -  np.fromfile(f'{folder}/nv_num.dat', dtype=int)[0]) 
-    gv_cpu_util = -sum(np.fromfile(f'{folder}/gv_cpu_utils.dat')) / ((np.fromfile(f'{folder}/gv_blockeds.dat', dtype=int)[0]) -  np.fromfile(f'{folder}/gv_num.dat', dtype=int)[0]) 
-    bf_cpu_util = -sum(np.fromfile(f'{folder}/bf_cpu_utils.dat')) / ((np.fromfile(f'{folder}/bf_blockeds.dat', dtype=int)[0]) -  np.fromfile(f'{folder}/bf_num.dat', dtype=int)[0]) 
-    ff_cpu_util = -sum(np.fromfile(f'{folder}/ff_cpu_utils.dat')) / ((np.fromfile(f'{folder}/ff_blockeds.dat', dtype=int)[0]) -  np.fromfile(f'{folder}/ff_num.dat', dtype=int)[0]) 
-
-
-    from result_utils import draw_bars
-    draw_bars(['GRC', 'GraphViNE', 'Best Fit', 'First Fit', 'NeuroViNE'],
-               [grc_cpu_util, gv_cpu_util, bf_cpu_util, ff_cpu_util, nv_cpu_util], 
-               '2000 Time Units - 2 req per tt - VNRs max link 40',
-               name='cpu_util')
-
-    grc_link_util = -sum(np.fromfile(f'{folder}/grc_link_utils.dat')) / ((np.fromfile(f'{folder}/grc_blockeds.dat', dtype=int)[0]) -  np.fromfile(f'{folder}/grc_num.dat', dtype=int)[0]) 
-    nv_link_util = -sum(np.fromfile(f'{folder}/nv_link_utils.dat')) / ((np.fromfile(f'{folder}/nv_blockeds.dat', dtype=int)[0]) -  np.fromfile(f'{folder}/nv_num.dat', dtype=int)[0]) 
-    gv_link_util = -sum(np.fromfile(f'{folder}/gv_link_utils.dat')) / ((np.fromfile(f'{folder}/gv_blockeds.dat', dtype=int)[0]) -  np.fromfile(f'{folder}/gv_num.dat', dtype=int)[0]) 
-    bf_link_util = -sum(np.fromfile(f'{folder}/bf_link_utils.dat')) / ((np.fromfile(f'{folder}/bf_blockeds.dat', dtype=int)[0]) -  np.fromfile(f'{folder}/bf_num.dat', dtype=int)[0]) 
-    ff_link_util = -sum(np.fromfile(f'{folder}/ff_link_utils.dat')) / ((np.fromfile(f'{folder}/ff_blockeds.dat', dtype=int)[0]) -  np.fromfile(f'{folder}/ff_num.dat', dtype=int)[0]) 
+    grc_link_util = -sum(np.fromfile(f'{folder}/grc_link_utils.dat')) / ((np.fromfile(
+        f'{folder}/grc_blockeds.dat', dtype=int)[0]) - np.fromfile(f'{folder}/grc_num.dat', dtype=int)[0])
+    nv_link_util = -sum(np.fromfile(f'{folder}/nv_link_utils.dat')) / ((np.fromfile(
+        f'{folder}/nv_blockeds.dat', dtype=int)[0]) - np.fromfile(f'{folder}/nv_num.dat', dtype=int)[0])
+    gv_link_util = -sum(np.fromfile(f'{folder}/gv_link_utils.dat')) / ((np.fromfile(
+        f'{folder}/gv_blockeds.dat', dtype=int)[0]) - np.fromfile(f'{folder}/gv_num.dat', dtype=int)[0])
+    bf_link_util = -sum(np.fromfile(f'{folder}/bf_link_utils.dat')) / ((np.fromfile(
+        f'{folder}/bf_blockeds.dat', dtype=int)[0]) - np.fromfile(f'{folder}/bf_num.dat', dtype=int)[0])
+    ff_link_util = -sum(np.fromfile(f'{folder}/ff_link_utils.dat')) / ((np.fromfile(
+        f'{folder}/ff_blockeds.dat', dtype=int)[0]) - np.fromfile(f'{folder}/ff_num.dat', dtype=int)[0])
 
     from result_utils import draw_bars
     draw_bars(['GRC', 'GraphViNE', 'Best Fit', 'First Fit', 'NeuroViNE'],
-               [grc_link_util, gv_link_util, bf_link_util, ff_link_util, nv_link_util], 
-               '2000 Time Units - 2 req per tt - VNRs max link 40',
-               name='link_util') 
-     
+              [grc_link_util, gv_link_util, bf_link_util,
+                  ff_link_util, nv_link_util],
+              '2000 Time Units - 2 req per tt - VNRs max link 40',
+              name='link_util')
 
 
+def compute_extra():
+    np.random.seed(64)  # to get a unique result every time
+    physical_graph = create_network_graph(nodes_num=100, extra_features=True)
+    requests = [create_network_graph(np.random.randint(3, 11), min_feature_val=4, max_feature_val=10,
+                                     min_link_val=4, max_link_val=10, min_GPU=9, max_GPU=30, 
+                                     min_mem=4, max_mem=10, extra_features=True, connection_prob=0.7, life_time=(100, 900)) for i in range(12500)]
+
+    load = 1000
+    max_time = 2000
+    graphViNE_run(physical_graph, requests, load=load,
+                  max_time=max_time, verbose=False)
+    # best_fit_run(physical_graph, requests, load=load, max_time=max_time, verbose=False)
+    # first_fit_run(physical_graph, requests, load=load, max_time=max_time, verbose=False)
 
 
-commands = ['--help', '-h', '--get_results', '--compare_results'] 
+commands = ['--help', '-h', '--get_results', '--compare_results',
+            '--get_results_extra', '--compare_results_extra']
 help = '''
     Oprtions:
         --help / -h : shows this help!
         --get_resutls : computes results of models and store in ./results repo.
-        --compare_resutls : compares results using matplotlib
+        --compare_results : compares results using matplotlib
+        --get_resutls_extra : compute results of models with gpu and memory as extra 
+                        feature an store in ./results repo.
+        --compare_results_extra : compares results using matplotlib
         '''
 if __name__ == "__main__":
     if len(sys.argv) != 2 or sys.argv[1] not in commands:
@@ -194,3 +215,5 @@ if __name__ == "__main__":
         compute()
     elif sys.argv[1] == commands[3]:
         compare()
+    elif sys.argv[1] == commands[4]:
+        compute_extra()

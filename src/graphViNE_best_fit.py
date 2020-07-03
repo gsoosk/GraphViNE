@@ -1,4 +1,5 @@
 
+from compare_utils import compute_cost, compute_revenue
 import networkx as nx
 import numpy as np
 
@@ -40,6 +41,13 @@ def can_embed(node_number, request_node_number, request_graph, physical_graph, v
     """
     node_has_resource = physical_graph.nodes[node_number][
         'CPU'] >= request_graph.nodes[request_node_number]['CPU']
+    if 'GPU' in physical_graph.nodes[node_number]:
+        node_has_resource = (
+            node_has_resource and physical_graph.nodes[node_number]['GPU'] >= request_graph.nodes[request_node_number]['GPU'])
+    if 'Memory' in physical_graph.nodes[node_number]:
+        node_has_resource = (
+            node_has_resource and physical_graph.nodes[node_number]['Memory'] >= request_graph.nodes[request_node_number]['Memory'])
+
     if verbose:
         print(
             f'Node {node_number} has resource for {request_node_number}: {node_has_resource}')
@@ -64,7 +72,6 @@ def can_embed(node_number, request_node_number, request_graph, physical_graph, v
     return adjacents_bandwidth_satisfied
 
 
-
 def embed_to_physical(node_number, request_node_number, request_graph, physical_graph, verbose=False):
     r"""
     Embed a single node to physical graph
@@ -72,6 +79,11 @@ def embed_to_physical(node_number, request_node_number, request_graph, physical_
     req_dict = request_graph.nodes(data=True)[request_node_number]
     request_graph.nodes[request_node_number]['Embedded'] = node_number
     physical_graph.nodes[node_number]['CPU'] -= req_dict['CPU']
+    if 'GPU' in physical_graph.nodes[node_number]:
+        physical_graph.nodes[node_number]['GPU'] -= req_dict['GPU']
+    if 'Memory' in physical_graph.nodes[node_number]:
+        physical_graph.nodes[node_number]['Memory'] -= req_dict['Memory']
+
     if verbose:
         print(
             f'Resources had changed for node {node_number} in physical graph.')
@@ -98,12 +110,17 @@ def embed_to_physical(node_number, request_node_number, request_graph, physical_
     request_graph.graph['Embedded'] = True
 
 
-
 def free_embedded_request_node(physical_graph, request_graph, request_node):
     if 'Embedded' in request_graph.nodes[request_node]:
         embedded_node = request_graph.nodes[request_node]['Embedded']
         physical_graph.nodes[embedded_node]['CPU'] += request_graph.nodes[request_node]['CPU']
+        if 'GPU' in physical_graph.nodes[embedded_node]['GPU']:
+            physical_graph.nodes[embedded_node]['GPU'] += request_graph.nodes[request_node]['GPU']
+        if 'Memory' in physical_graph.nodes[embedded_node]['Memory']:
+            physical_graph.nodes[embedded_node]['Memory'] += request_graph.nodes[request_node]['Memory']
+
         del request_graph.nodes[request_node]['Embedded']
+
     for i in request_graph.edges(request_node):  # free links
         src = i[0]
         dst = i[1]
@@ -115,7 +132,6 @@ def free_embedded_request_node(physical_graph, request_graph, request_node):
             del request_graph.edges[src, dst]['Embedded']
 
 
-
 def embed_request_in_cluster(request_graph, physical_graph, center_node, max_visit, max_depth=3, verbose=False, check_verbose=False, embedding_verbose=False):
     r"""
     Try to embed a request in some adjacent nodes of a center selected from a cluster 
@@ -124,8 +140,8 @@ def embed_request_in_cluster(request_graph, physical_graph, center_node, max_vis
     Returns: embedding was successfull or not
     """
     q = request_graph
-    sorted_request_nodes = sorted(
-        q.nodes(data=True), key=lambda t: t[1]['CPU'], reverse=True)  # descending
+    sorted_request_nodes = sorted(q.nodes(data=True), key=lambda t: t[1]['CPU'] + (
+        (t[1]['GPU']+t[1]['Memory']) if 'GPU' in t[1] else 0), reverse=True)  # descending
     max_visit_in_every_depth = int(np.power(max_visit, 1/max_depth))
 
     for node in sorted_request_nodes:
@@ -176,13 +192,15 @@ def embed_request_in_cluster(request_graph, physical_graph, center_node, max_vis
             return True
 
 
-
-
 def free_embedded_request(physical_graph, request_graph):
     for i in request_graph.nodes:  # free cpus
         if 'Embedded' in request_graph.nodes[i]:
             embedded_node = request_graph.nodes[i]['Embedded']
             physical_graph.nodes[embedded_node]['CPU'] += request_graph.nodes[i]['CPU']
+            if 'GPU' in physical_graph.nodes[embedded_node]:
+                physical_graph.nodes[embedded_node]['GPU'] += request_graph.nodes[i]['GPU']
+            if 'Memory' in physical_graph.nodes[embedded_node]:
+                physical_graph.nodes[embedded_node]['Memory'] += request_graph.nodes[i]['Memory']
             del request_graph.nodes[i]['Embedded']
 
     for i in request_graph.edges:  # free links
@@ -201,6 +219,10 @@ def unfree_embedded_request(physical_graph, request_graph):
         if 'Embedded' in request_graph.nodes[i]:
             embedded_node = request_graph.nodes[i]['Embedded']
             physical_graph.nodes[embedded_node]['CPU'] -= request_graph.nodes[i]['CPU']
+            if 'GPU' in physical_graph.nodes[embedded_node]:
+                physical_graph.nodes[embedded_node]['GPU'] -= request_graph.nodes[i]['GPU']
+            if 'Memory' in physical_graph.nodes[embedded_node]:
+                physical_graph.nodes[embedded_node]['Memory'] -= request_graph.nodes[i]['Memory']
 
     for i in request_graph.edges:  # unfree links
         src = i[0]
@@ -235,29 +257,29 @@ def embed_request(cluster_center, physical, request_graph, beta=30, verbose=True
     return request_embedded, physical, request_graph
 
 
-from compare_utils import compute_cost, compute_revenue
+def graphViNE_embed(physical_graph, cluster_index, request_graph, alpha=0.5, N_CLUSTERS=4, verbose=False):
+    embeddeds = []
+    embedded = False
+    for i in range(N_CLUSTERS):
+        j = int(len(np.where(cluster_index == i)[0]) * alpha)
 
-def graphViNE_embed(physical_graph, cluster_index, request_graph, alpha = 0.5, N_CLUSTERS=4, verbose=False):
-  embeddeds = []
-  embedded = False
-  for i in range(N_CLUSTERS):
-    j = int( len(np.where(cluster_index == i)[0]) * alpha )
+        request_embedded = False
+        while not request_embedded and j != 0:
+            selected_node = sample_from_physical(
+                physical_graph, cluster_index, i)
+            request_embedded, physical_graph, request_graph = embed_request(
+                selected_node, physical_graph, request_graph, verbose=verbose)
+            j -= 1
 
-    request_embedded = False
-    while not request_embedded and j != 0:
-      selected_node = sample_from_physical(physical_graph, cluster_index, i)
-      request_embedded, physical_graph, request_graph = embed_request(selected_node, physical_graph, request_graph, verbose=verbose)
-      j -= 1
-  
-    if request_embedded:
-      embeddeds.append((request_graph.copy(), compute_cost(request_graph)))
-      free_embedded_request(physical_graph, request_graph)
+        if request_embedded:
+            embeddeds.append(
+                (request_graph.copy(), compute_cost(request_graph)))
+            free_embedded_request(physical_graph, request_graph)
 
-  if len(embeddeds) != 0:
-    (q, cost) = sorted(embeddeds, key=lambda t: t[1])[0]
-    request_graph = q
-    embedded = True
-    unfree_embedded_request(physical_graph, request_graph)
+    if len(embeddeds) != 0:
+        (q, cost) = sorted(embeddeds, key=lambda t: t[1])[0]
+        request_graph = q
+        embedded = True
+        unfree_embedded_request(physical_graph, request_graph)
 
-  return embedded, physical_graph, request_graph
-
+    return embedded, physical_graph, request_graph
