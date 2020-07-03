@@ -87,15 +87,15 @@ def compute():
     load = 1000
     max_time = 2000
     graphViNE_run(physical_graph, requests, load=load,
-                  max_time=max_time, verbose=False)
-    neuroViNE_run(physical_graph, requests, load=load,
-                  max_time=max_time, verbose=False)
-    grc_run(physical_graph, requests, load=load,
-            max_time=max_time, verbose=False)
-    best_fit_run(physical_graph, requests, load=load,
-                 max_time=max_time, verbose=False)
-    first_fit_run(physical_graph, requests, load=load,
-                  max_time=max_time, verbose=False)
+                  max_time=max_time, verbose=True)
+    # neuroViNE_run(physical_graph, requests, load=load,
+    #               max_time=max_time, verbose=False)
+    # grc_run(physical_graph, requests, load=load,
+    #         max_time=max_time, verbose=False)
+    # best_fit_run(physical_graph, requests, load=load,
+    #              max_time=max_time, verbose=False)
+    # first_fit_run(physical_graph, requests, load=load,
+    #               max_time=max_time, verbose=False)
 
 
 def compare():
@@ -189,7 +189,7 @@ def compute_extra():
     load = 1000
     max_time = 2000
     graphViNE_run(physical_graph, requests, load=load,
-                  max_time=max_time, verbose=False)
+                  max_time=max_time, verbose=True)
     # best_fit_run(physical_graph, requests, load=load, max_time=max_time, verbose=False)
     # first_fit_run(physical_graph, requests, load=load, max_time=max_time, verbose=False)
 

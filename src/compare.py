@@ -87,11 +87,10 @@ def get_run_result(physical, request_graphs, method="graphViNE", max_time=3000,
                     if 'GPU' in physical.nodes[0]:
                         cpu_util, link_util, gpu_util, mem_util = compute_utils(
                             physical)
-                        cpu_utils.append(cpu_util)
-                        link_utils.append(link_util)
                         gpu_utils.append(gpu_util)
                         memory_utils.append(mem_util)
-                    cpu_util, link_util = compute_utils(physical)
+                    else:
+                        cpu_util, link_util = compute_utils(physical)
                     cpu_utils.append(cpu_util)
                     link_utils.append(link_util)
 
