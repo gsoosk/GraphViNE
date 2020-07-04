@@ -2,31 +2,7 @@ import networkx as nx
 import numpy as np
 import sys
 import traceback
-
-
-class Net:
-    def __init__(self, cpu, bw):
-        self.cpu = cpu
-        self.bw = bw
-    
-    def get_copy(self): 
-        return Net(self.cpu, self.bw)
-    
-    def shrink_net(self, a):
-        cpu_temp_a = self.cpu[a]
-        self.cpu[:] = 0
-        self.cpu[a] = cpu_temp_a
-
-
-class Inst:
-    def __init__(self, physical, request):
-        bw = np.asarray(nx.to_numpy_matrix(physical, weight='Bandwidth'))
-        cpu = np.array(list(nx.get_node_attributes(physical, 'CPU').values()))
-        self.p_net = Net(cpu, bw)
-        bw = np.asarray(nx.to_numpy_matrix(request, weight='Bandwidth'))
-        cpu = np.array(list(nx.get_node_attributes(request, 'CPU').values()))
-        self.v_net = Net(cpu, bw)
-
+from first_fit import Net, Inst
 
 class BestFit:
     def __init__(self):
@@ -43,7 +19,13 @@ class BestFit:
 
     def solve(self, vnr_inst):
         best_vector_p = vnr_inst.p_net.cpu
+        if vnr_inst.extra_features:
+            best_vector_p = vnr_inst.p_net.gpu
+            best_vector_p = vnr_inst.p_net.cpu
         best_vector_v = vnr_inst.v_net.cpu
+        if vnr_inst.extra_features:
+            best_vector_p = vnr_inst.p_net.gpu
+            best_vector_p = vnr_inst.p_net.cpu
         (blocked, Fn, cp_residual) = self.greedy_node_mapping(
             vnr_inst, best_vector_p, best_vector_v)
         if blocked == False:
@@ -107,16 +89,22 @@ class BestFit:
         count = 0
         blocked = False
         index_p = np.flip(np.argsort(grc_vector_p), axis=0)
-        index_v = np.flip(np.argsort(grc_vector_v), axis=0)
+        # index_v = np.flip(np.argsort(grc_vector_v), axis=0)
         selected = np.ones(p_len)
-        for i in index_v:
+        for i in range(v_len):
             for j in index_p:
                 '''if selected[j] == 0:
                     continue'''
                 if vnr_inst.p_net.cpu[j] >= vnr_inst.v_net.cpu[i]:
+                    if vnr_inst.extra_features:
+                        if vnr_inst.p_net.gpu[j] < vnr_inst.v_net.gpu[i] or vnr_inst.p_net.memory[j] < vnr_inst.v_net.memory[i]:
+                            continue
                     Fn[i] = j
                     count = count + 1
                     vnr_inst.p_net.cpu[j] -= vnr_inst.v_net.cpu[i]
+                    if vnr_inst.extra_features:
+                        vnr_inst.p_net.gpu[j] -= vnr_inst.v_net.gpu[i]
+                        vnr_inst.p_net.memory[j] -= vnr_inst.v_net.memory[i]
                     #selected[j] = 0
                     break
         if count != v_len:

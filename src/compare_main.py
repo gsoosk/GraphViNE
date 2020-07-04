@@ -178,6 +178,75 @@ def compare():
               '2000 Time Units - 2 req per tt - VNRs max link 40',
               name='link_util')
 
+def compare_extra():
+    folder = './results/ExtraLoad1000'
+    gv_probs = np.fromfile(f'{folder}/gv_probs.dat')
+    bf_probs = np.fromfile(f'{folder}/bf_probs.dat')
+    ff_probs = np.fromfile(f'{folder}/ff_probs.dat')
+
+    from result_utils import draw_blocking_prob
+    draw_blocking_prob([gv_probs, bf_probs, ff_probs],
+                       ['GraphViNE', 'Best Fit', 'First Fit'],
+                       ['b', 'purple', 'green'],
+                       'Time Units', 'Blocking prob', 'Models Block Probability with 2 Request Per Time Unit - (VNRs Link max = 50 instead of 10)',
+                       name='bp', scale=4)
+
+    draw_blocking_prob([1 - gv_probs, 1 - bf_probs, 1 - ff_probs],
+                       ['GraphViNE', 'Best Fit', 'First Fit'],
+                       ['b', 'purple', 'green'],
+                       'Time Units', 'Acceptance Ratio', 'Models Acceptance Ratio with 2 Request Per Time Unit - (VNRs Link max = 50 instead of 10)',
+                       name='ar', scale=4)
+
+    gv_revenue = sum(np.fromfile(f'{folder}/gv_revenue.dat', dtype=int))
+    bf_revenue = sum(np.fromfile(f'{folder}/bf_revenue.dat', dtype=int))
+    ff_revenue = sum(np.fromfile(f'{folder}/ff_revenue.dat', dtype=int))
+
+    from result_utils import draw_bars
+    draw_bars(['GraphViNE', 'Best Fit', 'First Fit'],
+              [gv_revenue, bf_revenue, ff_revenue],
+              '2000 Time Units - 2 req per tt - VNRs max link 40',
+              name='revenue')
+
+    gv_cost = sum(np.fromfile(f'{folder}/gv_cost.dat', dtype=int))
+    bf_cost = sum(np.fromfile(f'{folder}/bf_cost.dat', dtype=int))
+    ff_cost = sum(np.fromfile(f'{folder}/ff_cost.dat', dtype=int))
+
+    from result_utils import draw_bars
+    draw_bars(['GraphViNE', 'Best Fit', 'First Fit'],
+              [gv_cost, bf_cost, ff_cost],
+              '2000 Time Units - 2 req per tt - VNRs max link 40',
+              name='cost')
+
+
+
+    gv_cpu_util = -sum(np.fromfile(f'{folder}/gv_cpu_utils.dat')) / ((np.fromfile(
+        f'{folder}/gv_blockeds.dat', dtype=int)[0]) - np.fromfile(f'{folder}/gv_num.dat', dtype=int)[0])
+    bf_cpu_util = -sum(np.fromfile(f'{folder}/bf_cpu_utils.dat')) / ((np.fromfile(
+        f'{folder}/bf_blockeds.dat', dtype=int)[0]) - np.fromfile(f'{folder}/bf_num.dat', dtype=int)[0])
+    ff_cpu_util = -sum(np.fromfile(f'{folder}/ff_cpu_utils.dat')) / ((np.fromfile(
+        f'{folder}/ff_blockeds.dat', dtype=int)[0]) - np.fromfile(f'{folder}/ff_num.dat', dtype=int)[0])
+
+    from result_utils import draw_bars
+    draw_bars(['GraphViNE', 'Best Fit', 'First Fit'],
+              [ gv_cpu_util, bf_cpu_util, ff_cpu_util],
+              '2000 Time Units - 2 req per tt - VNRs max link 40',
+              name='cpu_util')
+
+
+    gv_link_util = -sum(np.fromfile(f'{folder}/gv_link_utils.dat')) / ((np.fromfile(
+        f'{folder}/gv_blockeds.dat', dtype=int)[0]) - np.fromfile(f'{folder}/gv_num.dat', dtype=int)[0])
+    bf_link_util = -sum(np.fromfile(f'{folder}/bf_link_utils.dat')) / ((np.fromfile(
+        f'{folder}/bf_blockeds.dat', dtype=int)[0]) - np.fromfile(f'{folder}/bf_num.dat', dtype=int)[0])
+    ff_link_util = -sum(np.fromfile(f'{folder}/ff_link_utils.dat')) / ((np.fromfile(
+        f'{folder}/ff_blockeds.dat', dtype=int)[0]) - np.fromfile(f'{folder}/ff_num.dat', dtype=int)[0])
+
+    from result_utils import draw_bars
+    draw_bars(['GraphViNE', 'Best Fit', 'First Fit'],
+              [gv_link_util, bf_link_util,
+                  ff_link_util],
+              '2000 Time Units - 2 req per tt - VNRs max link 40',
+              name='link_util')
+
 
 def compute_extra():
     np.random.seed(64)  # to get a unique result every time
@@ -190,9 +259,10 @@ def compute_extra():
     max_time = 2000
     # graphViNE_run(physical_graph, requests, load=load,
     #               max_time=max_time, verbose=False)
-    # best_fit_run(physical_graph, requests, load=load, max_time=max_time, verbose=False)
-    first_fit_run(physical_graph, requests, load=load,
-                  max_time=max_time, verbose=True)
+    best_fit_run(physical_graph, requests, load=load,
+                 max_time=max_time, verbose=True)
+    # first_fit_run(physical_graph, requests, load=load,
+    #               max_time=max_time, verbose=True)
 
 
 commands = ['--help', '-h', '--get_results', '--compare_results',
