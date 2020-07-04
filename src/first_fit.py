@@ -5,27 +5,33 @@ import traceback
 
 
 class Net:
-    def __init__(self, cpu, bw):
+    def __init__(self, cpu, bw, gpu=None, memory=None):
         self.cpu = cpu
         self.bw = bw
-
-    def get_copy(self):
-        return Net(self.cpu, self.bw)
-
-    def shrink_net(self, a):
-        cpu_temp_a = self.cpu[a]
-        self.cpu[:] = 0
-        self.cpu[a] = cpu_temp_a
+        self.gpu = gpu
+        self.memory = memory
 
 
 class Inst:
     def __init__(self, physical, request):
         bw = np.asarray(nx.to_numpy_matrix(physical, weight='Bandwidth'))
         cpu = np.array(list(nx.get_node_attributes(physical, 'CPU').values()))
-        self.p_net = Net(cpu, bw)
+        gpu = np.array(list(nx.get_node_attributes(
+            physical, 'GPU').values())) if 'GPU' in physical.nodes[0] else None
+        memory = np.array(list(nx.get_node_attributes(
+            physical, 'Memory').values())) if 'Memory' in physical.nodes[0] else None
+        self.p_net = Net(cpu, bw, gpu, memory)
         bw = np.asarray(nx.to_numpy_matrix(request, weight='Bandwidth'))
         cpu = np.array(list(nx.get_node_attributes(request, 'CPU').values()))
-        self.v_net = Net(cpu, bw)
+        gpu = np.array(list(nx.get_node_attributes(
+            physical, 'GPU').values())) if 'GPU' in request.nodes[0] else None
+        memory = np.array(list(nx.get_node_attributes(
+            physical, 'Memory').values())) if 'Memory' in request.nodes[0] else None
+        self.v_net = Net(cpu, bw, gpu, memory)
+        if 'GPU' in physical.nodes[0]:
+            self.extra_features = True
+        else:
+            self.extra_features = False
 
 
 class FirstFit:
@@ -108,9 +114,15 @@ class FirstFit:
                 '''if selected[j] == 0:
                     continue'''
                 if vnr_inst.p_net.cpu[j] >= vnr_inst.v_net.cpu[i]:
+                    if vnr_inst.extra_features:
+                        if vnr_inst.p_net.gpu[j] < vnr_inst.v_net.gpu[i] or vnr_inst.p_net.memory[j] < vnr_inst.v_net.memory[i]:
+                            continue
                     Fn[i] = j
                     count = count + 1
                     vnr_inst.p_net.cpu[j] -= vnr_inst.v_net.cpu[i]
+                    if vnr_inst.extra_features:
+                        vnr_inst.p_net.gpu[j] -= vnr_inst.v_net.gpu[i]
+                        vnr_inst.p_net.memory[j] -= vnr_inst.v_net.memory[i]
                     #selected[j] = 0
                     break
         if count != v_len:
