@@ -3,10 +3,9 @@ import torch
 from torch.nn import Linear
 import torch.nn.functional as F
 from sklearn.cluster import KMeans
-from torch_geometric.nn import ARGVA, VGAE
 from sklearn.metrics import accuracy_score, silhouette_score, davies_bouldin_score
 from torch_geometric.nn.conv import MessagePassing
-
+from auto_encoder import InnerProductDecoder, ARGVA
 
 class SAGEConv(MessagePassing):
     r"""The GraphSAGE operator from the `"Inductive Representation Learning on
@@ -94,6 +93,20 @@ class Encoder(torch.nn.Module):
         x = F.elu(self.conv1(x, edge_index, edge_attr))
         return self.conv_mu(x, edge_index, edge_attr), self.conv_logvar(x, edge_index, edge_attr)
 
+class GraphVineDecoder(torch.nn.Module):
+    def __init__(self, input_numbers, hidden_depth, link_creator_numbers, output_numbers):
+      super(GraphVineDecoder, self).__init__()
+      self.dense1 = torch.nn.Linear(input_numbers, hidden_depth)
+      self.dense2 = torch.nn.Linear(hidden_depth, output_numbers)
+      self.dense3 = torch.nn.Linear(hidden_depth, link_creator_numbers)
+      self.inner_product = InnerProductDecoder()
+
+    def forward(self, z, edge_index, sigmoid=True):
+      z = F.relu(self.dense1(z))
+      zprim = self.dense2(z)
+      aprim = self.dense3(z)
+      
+      return zprim, self.inner_product(aprim, edge_index)
 
 def cluster_using_argva(data, verbose=True, max_epoch=150, pre_trained_model=None, gpu=True):
     data = data.clone()
@@ -110,7 +123,7 @@ def cluster_using_argva(data, verbose=True, max_epoch=150, pre_trained_model=Non
             discriminator_loss.backward()
             discriminator_optimizer.step()
 
-        loss = model.recon_loss(z, data.edge_index)
+        loss = model.recon_loss(z, data.edge_index, data.x)
         loss = loss + (1 / data.num_nodes) * model.kl_loss()
         loss.backward()
         model_optimizer.step()
@@ -133,11 +146,12 @@ def cluster_using_argva(data, verbose=True, max_epoch=150, pre_trained_model=Non
 
     encoder = Encoder(data.num_features, 16, 16)
     discriminator = Discriminator(16, 32, 16)
+    decoder = GraphVineDecoder(16, 16, 8, data.num_features)
     model = None
     if pre_trained_model is not None:
         model = pre_trained_model
     else:
-        model = ARGVA(encoder, discriminator)
+        model = ARGVA(encoder, discriminator, decoder=decoder)
 
     discriminator_optimizer = torch.optim.Adam(
         model.discriminator.parameters(), lr=0.001)

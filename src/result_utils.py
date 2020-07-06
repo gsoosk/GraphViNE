@@ -12,6 +12,7 @@ def draw_blocking_prob(x, labels, colors, x_label, y_label, title='', save=True,
     ax.plot(np.array(range(len(x[i])))[::scale], x[i][::scale],  color=colors[i], label=labels[i])
   ax.set_ylabel(y_label)
   ax.set_xlabel(x_label)
+  ax.grid()
   legend = ax.legend(loc='upper left', shadow=True)
   if title != '':
     ax.set_title(title)

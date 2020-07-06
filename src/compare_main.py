@@ -179,7 +179,7 @@ def compare():
               name='link_util')
 
 def compare_extra():
-    folder = './results/ExtraLoad1000'
+    folder = './results/test'
     gv_probs = np.fromfile(f'{folder}/gv_probs.dat')
     bf_probs = np.fromfile(f'{folder}/bf_probs.dat')
     ff_probs = np.fromfile(f'{folder}/ff_probs.dat')
@@ -257,10 +257,10 @@ def compute_extra():
 
     load = 1000
     max_time = 2000
-    # graphViNE_run(physical_graph, requests, load=load,
-    #               max_time=max_time, verbose=False)
-    best_fit_run(physical_graph, requests, load=load,
-                 max_time=max_time, verbose=True)
+    graphViNE_run(physical_graph, requests, load=load,
+                  max_time=max_time, verbose=True)
+    # best_fit_run(physical_graph, requests, load=load,
+    #              max_time=max_time, verbose=True)
     # first_fit_run(physical_graph, requests, load=load,
     #               max_time=max_time, verbose=True)
 
