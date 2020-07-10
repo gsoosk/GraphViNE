@@ -132,13 +132,14 @@ def free_embedded_request_node(physical_graph, request_graph, request_node):
             del request_graph.edges[src, dst]['Embedded']
 
 
-def embed_request_in_cluster(request_graph, physical_graph, center_node, max_visit, max_depth=3, verbose=False, check_verbose=False, embedding_verbose=False):
+def embed_request_in_cluster(request_graph, physical_graph, center_node, max_visit, beta=3, verbose=False, check_verbose=False, embedding_verbose=False):
     r"""
     Try to embed a request in some adjacent nodes of a center selected from a cluster 
     It uses BFS to traverse graph and in each itteration it selected best nodes in a depth
 
     Returns: embedding was successfull or not
     """
+    max_depth = beta
     q = request_graph
     sorted_request_nodes = sorted(q.nodes(data=True), key=lambda t: t[1]['CPU'] + (
         (t[1]['GPU']+t[1]['Memory']) if 'GPU' in t[1] else 0), reverse=True)  # descending
@@ -169,12 +170,10 @@ def embed_request_in_cluster(request_graph, physical_graph, center_node, max_vis
             if depth == max_depth:
                 continue
 
-            sorted_edges = sorted(physical_graph.edges(
-                center_node, data=True), key=lambda t: physical_graph.nodes[t[1]]['CPU'], reverse=True)  # desending
-            sorted_edges = sorted_edges if len(
-                sorted_edges) <= max_visit else sorted_edges[:max_visit_in_every_depth]
+            node_edges = physical_graph.edges(center_node, data=True)            
+            node_edges = node_edges if len(node_edges) <= max_visit else node_edges[:max_visit_in_every_depth]
 
-            for edge in sorted_edges:
+            for edge in node_edges:
                 dst = edge[1]
                 if not visited[dst]:
                     queue.append((dst, depth+1))
@@ -234,7 +233,7 @@ def unfree_embedded_request(physical_graph, request_graph):
                                      ]['Bandwidth'] -= request_graph.edges[src, dst]['Bandwidth']
 
 
-def embed_request(cluster_center, physical, request_graph, beta=30, verbose=True):
+def embed_request(cluster_center, physical, request_graph, alpha=30, verbose=True):
     r"""
     Try to embed request in some adjacent nodes from different clusters.
     beta is coeffience of max_visit_nodes
@@ -242,7 +241,7 @@ def embed_request(cluster_center, physical, request_graph, beta=30, verbose=True
     """
     request_embedded = False
 
-    max_visit_nodes = request_graph.number_of_nodes() * beta
+    max_visit_nodes = request_graph.number_of_nodes() * alpha
     request_embedded = embed_request_in_cluster(
         request_graph, physical, cluster_center, max_visit_nodes, verbose=False)  # can embedd to them?
 
@@ -257,11 +256,11 @@ def embed_request(cluster_center, physical, request_graph, beta=30, verbose=True
     return request_embedded, physical, request_graph
 
 
-def graphViNE_embed(physical_graph, cluster_index, request_graph, alpha=0.5, N_CLUSTERS=4, verbose=False):
+def graphViNE_embed(physical_graph, cluster_index, request_graph, max_try=0.5, N_CLUSTERS=4, verbose=False):
     embeddeds = []
     embedded = False
     for i in range(N_CLUSTERS):
-        j = int(len(np.where(cluster_index == i)[0]) * alpha)
+        j = int(len(np.where(cluster_index == i)[0]) * max_try)
 
         request_embedded = False
         while not request_embedded and j != 0:
