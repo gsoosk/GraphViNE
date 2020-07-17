@@ -82,24 +82,24 @@ def compute():
     np.random.seed(64)  # to get a unique result every time
     physical_graph = create_network_graph(nodes_num=100)
     requests = [create_network_graph(np.random.randint(3, 11), min_feature_val=4, max_feature_val=10,
-                                     min_link_val=4, max_link_val=50, connection_prob=0.7, life_time=(100, 900)) for i in range(12500)]
+                                     min_link_val=4, max_link_val=10, connection_prob=0.7, life_time=(100, 900)) for i in range(12500)]
 
     load = 1000
     max_time = 2000
-    # graphViNE_run(physical_graph, requests, load=load,
-    #               max_time=max_time, verbose=True)
-    # neuroViNE_run(physical_graph, requests, load=load,
-    #               max_time=max_time, verbose=False)
-    # grc_run(physical_graph, requests, load=load,
-    #         max_time=max_time, verbose=False)
+    graphViNE_run(physical_graph, requests, load=load,
+                  max_time=max_time, verbose=False)
+    neuroViNE_run(physical_graph, requests, load=load,
+                  max_time=max_time, verbose=False)
+    grc_run(physical_graph, requests, load=load,
+            max_time=max_time, verbose=False)
     best_fit_run(physical_graph, requests, load=load,
                  max_time=max_time, verbose=False)
-    # first_fit_run(physical_graph, requests, load=load,
-    #               max_time=max_time, verbose=False)
+    first_fit_run(physical_graph, requests, load=load,
+                  max_time=max_time, verbose=False)
 
 
 def compare():
-    folder = './results/text'
+    folder = './results/test'
     grc_probs = np.fromfile(f'{folder}/grc_probs.dat')
     nv_probs = np.fromfile(f'{folder}/nv_probs.dat')
     gv_probs = np.fromfile(f'{folder}/gv_probs.dat')
@@ -259,10 +259,10 @@ def compute_extra():
     max_time = 2000
     graphViNE_run(physical_graph, requests, load=load,
                   max_time=max_time, verbose=True)
-    # best_fit_run(physical_graph, requests, load=load,
-    #              max_time=max_time, verbose=True)
-    # first_fit_run(physical_graph, requests, load=load,
-    #               max_time=max_time, verbose=True)
+    best_fit_run(physical_graph, requests, load=load,
+                 max_time=max_time, verbose=True)
+    first_fit_run(physical_graph, requests, load=load,
+                  max_time=max_time, verbose=True)
 
 
 commands = ['--help', '-h', '--get_results', '--compare_results',
