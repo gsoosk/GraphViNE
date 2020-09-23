@@ -267,17 +267,40 @@ def compute_extra():
     first_fit_run(physical_graph, requests, load=load,
                   max_time=max_time, verbose=True)
 
+def get_diff_req():
+    np.random.seed(64)  # to get a unique result every time
+    mean_req_sizes = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+    times = []
+    for i, size in enumerate(mean_req_sizes):
+        print(f'Start for size of {size} ({i}/{len(mean_req_sizes)})')
+
+        physical_graph = create_network_graph(nodes_num=100)
+        requests = [create_network_graph(np.random.randint(3, size), min_feature_val=4, max_feature_val=10,
+                                     min_link_val=4, max_link_val=10, connection_prob=0.7, life_time=(100, 900)) for i in range(2500)]
+
+        load = 1000
+        max_time = 51
+        ts = time.time()
+        graphViNE_run(physical_graph, requests, load=load,
+                        max_time=max_time, verbose=False, save=False)
+        te = time.time()
+        times.append(te - ts)
+        print(f'Size of {size} finished in {(te - ts)/102}')
+    print(times)
+    save_data(np.array(times), 'times')
 
 commands = ['--help', '-h', '--get_results', '--compare_results',
-            '--get_results_extra', '--compare_results_extra']
+            '--get_results_extra', '--compare_results_extra', '--get_diff_requests_result']
 help = '''
     Oprtions:
         --help / -h : shows this help!
-        --get_resutls : computes results of models and store in ./results repo.
-        --compare_results : compares results using matplotlib
-        --get_resutls_extra : compute results of models with gpu and memory as extra 
-                        feature an store in ./results repo.
-        --compare_results_extra : compares results using matplotlib
+        --get_resutls : computes the results of models and store in the ./results repo.
+        --compare_results : compares the results using matplotlib
+        --get_resutls_extra : compute the results of models with gpu and memory as extra 
+                        feature an store in the ./results repo.
+        --compare_results_extra : compares the results using matplotlib
+        --get_diff_requests_result: get the computation time of graphViNE model with different
+                        maximum size of request graphs and store them in the ./results repo.
         '''
 if __name__ == "__main__":
     if len(sys.argv) != 2 or sys.argv[1] not in commands:
@@ -293,3 +316,5 @@ if __name__ == "__main__":
         compute_extra()
     elif sys.argv[1] == commands[5]:
         compare_extra()
+    elif sys.argv[1] == commands[6]:
+        get_diff_req()
