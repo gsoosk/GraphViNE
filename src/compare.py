@@ -12,7 +12,7 @@ from first_fit import first_fit_embed
 
 
 def get_run_result(physical, request_graphs, method="graphViNE", max_time=3000,
-                   traffic_load=150, avg_life_time=500, verbose=True, cost_revenue=False, utils=False):
+                   traffic_load=150, avg_life_time=500, verbose=True, cost_revenue=False, utils=False, n_clusters=4):
     r"""
     traffic load is in erlang
     """
@@ -52,10 +52,10 @@ def get_run_result(physical, request_graphs, method="graphViNE", max_time=3000,
                     with torch.no_grad():
                         z = model.encode(
                             data.x, data.edge_index, data.edge_attr)
-                    pred = KMeans(n_clusters=4).fit_predict(z.cpu().data)
+                    pred = KMeans(n_clusters=n_clusters).fit_predict(z.cpu().data)
 
                 request_embedded, physical, request_graphs[request_index] = graphViNE_embed(
-                    physical, pred, request_graphs[request_index], verbose=False)
+                    physical, pred, request_graphs[request_index], verbose=False, N_CLUSTERS=n_clusters)
             ################################### GRC Method ##########################################################
             elif method == 'grc':
                 request_embedded, physical, request_graphs[request_index] = grc_embed(

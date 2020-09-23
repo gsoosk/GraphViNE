@@ -260,7 +260,7 @@ def graphViNE_embed(physical_graph, cluster_index, request_graph, max_try=0.5, N
     embeddeds = []
     embedded = False
     for i in range(N_CLUSTERS):
-        j = int(len(np.where(cluster_index == i)[0]) * max_try)
+        j = 10
 
         request_embedded = False
         while not request_embedded and j != 0:

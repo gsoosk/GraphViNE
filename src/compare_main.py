@@ -4,6 +4,7 @@ from compare import get_run_result
 import numpy as np
 from result_utils import save_data
 import _thread as thread
+import time
 
 
 def save_results(model_name, results):
@@ -18,14 +19,15 @@ def save_results(model_name, results):
         save_data(results[i], names[i])
 
 
-def graphViNE_run(physical_graph, requests, save=True, load=2000, max_time=500, verbose=True):
+def graphViNE_run(physical_graph, requests, save=True, load=2000, max_time=500, verbose=True, n_clusters = 4):
     physical_graph_vine = physical_graph.copy()
     request_graphs_graph_vine = [r.copy() for r in requests]
     results = get_run_result(
-        physical_graph_vine, request_graphs_graph_vine, method="graphViNE", traffic_load=load, max_time=max_time, cost_revenue=True, utils=True, verbose=verbose)
+        physical_graph_vine, request_graphs_graph_vine, method="graphViNE", traffic_load=load, max_time=max_time, cost_revenue=True, utils=True, verbose=verbose, 
+        n_clusters=n_clusters)
 
     if save:
-        save_results('gv', results)
+        save_results(f'gv{n_clusters}', results)
 
     return results
 
@@ -86,16 +88,17 @@ def compute():
 
     load = 1000
     max_time = 2000
+    
     graphViNE_run(physical_graph, requests, load=load,
-                  max_time=max_time, verbose=False)
+                  max_time=max_time, verbose=False, n_clusters=5)
     neuroViNE_run(physical_graph, requests, load=load,
-                  max_time=max_time, verbose=False)
+                  max_time=max_time, verbose=True)
     grc_run(physical_graph, requests, load=load,
-            max_time=max_time, verbose=False)
+            max_time=max_time, verbose=True)
     best_fit_run(physical_graph, requests, load=load,
-                 max_time=max_time, verbose=False)
+                 max_time=max_time, verbose=True)
     first_fit_run(physical_graph, requests, load=load,
-                  max_time=max_time, verbose=False)
+                  max_time=max_time, verbose=True)
 
 
 def compare():
