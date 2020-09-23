@@ -7,31 +7,12 @@ from sklearn.metrics import accuracy_score, silhouette_score, davies_bouldin_sco
 from torch_geometric.nn.conv import MessagePassing
 from auto_encoder import InnerProductDecoder, ARGVA
 
-class SAGEConv(MessagePassing):
-    r"""The GraphSAGE operator from the `"Inductive Representation Learning on
-    Large Graphs" <https://arxiv.org/abs/1706.02216>`_ paper
 
-    .. math::
-        \mathbf{x}^{\prime}_i = \mathbf{W}_1 \mathbf{x}_i + \mathbf{W_2} \cdot
-        \mathrm{mean}_{j \in \mathcal{N(i)}} \mathbf{x}_j
-
-    Args:
-        in_channels (int): Size of each input sample.
-        out_channels (int): Size of each output sample.
-        normalize (bool, optional): If set to :obj:`True`, output features
-            will be :math:`\ell_2`-normalized, *i.e.*,
-            :math:`\frac{\mathbf{x}^{\prime}_i}
-            {\| \mathbf{x}^{\prime}_i \|_2}`.
-            (default: :obj:`False`)
-        bias (bool, optional): If set to :obj:`False`, the layer will not learn
-            an additive bias. (default: :obj:`True`)
-        **kwargs (optional): Additional arguments of
-            :class:`torch_geometric.nn.conv.MessagePassing`.
-    """
-
+# We changed some of graph Sage implementation to get to our main model
+class GraphViNEConv(MessagePassing):
     def __init__(self, in_channels, out_channels, normalize=False, bias=True,
                  **kwargs):
-        super(SAGEConv, self).__init__(aggr='mean', **kwargs)
+        super(GraphViNEConv, self).__init__(aggr='mean', **kwargs)
 
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -85,9 +66,9 @@ class Discriminator(torch.nn.Module):
 class Encoder(torch.nn.Module):
     def __init__(self, in_channels, hidden, out_channels):
         super(Encoder, self).__init__()
-        self.conv1 = SAGEConv(in_channels, hidden)
-        self.conv_mu = SAGEConv(hidden, out_channels)
-        self.conv_logvar = SAGEConv(hidden, out_channels)
+        self.conv1 = GraphViNEConv(in_channels, hidden)
+        self.conv_mu = GraphViNEConv(hidden, out_channels)
+        self.conv_logvar = GraphViNEConv(hidden, out_channels)
 
     def forward(self, x, edge_index, edge_attr):
         x = F.elu(self.conv1(x, edge_index, edge_attr))
